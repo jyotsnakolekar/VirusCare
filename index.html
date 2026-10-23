@@ -1,0 +1,732 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f7fa">
+  <title>VirusCare | Facility operations</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #1e293b;
+      --muted: #64748b;
+      --line: #e5eaf0;
+      --paper: #fff;
+      --canvas: #f5f7fa;
+      --navy: #14253d;
+      --teal: #087e78;
+      --teal-soft: #e7f5f3;
+      --amber: #a85b0a;
+      --amber-soft: #fff3df;
+      --red: #b93838;
+      --red-soft: #fff0ee;
+      --green: #27734d;
+      --green-soft: #eaf6ee;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+    }
+
+    * { box-sizing: border-box; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+    body { margin: 0; background: var(--canvas); color: var(--ink); font-size: 14px; }
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    .shell { min-height: 100vh; }
+    .topbar {
+      height: 72px; display: flex; align-items: center; justify-content: space-between;
+      padding: 0 34px; background: var(--paper); border-bottom: 1px solid var(--line);
+    }
+    .brand { display: flex; align-items: center; gap: 12px; color: var(--navy); font-weight: 750; letter-spacing: -.03em; font-size: 18px; }
+    .brand-mark {
+      width: 36px; height: 36px; display: grid; place-items: center; border-radius: 11px;
+      color: white; background: var(--teal); font-size: 19px; font-weight: 800;
+    }
+    .brand small { display: block; color: var(--muted); font-size: 10px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; margin-top: 2px; }
+    .top-actions { display: flex; align-items: center; gap: 12px; }
+    .demo-label { border: 1px solid #f1d6a5; background: #fff8eb; color: #8c5819; border-radius: 999px; padding: 6px 10px; font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+    .role-select { border: 1px solid var(--line); background: white; border-radius: 9px; color: var(--ink); padding: 9px 32px 9px 11px; }
+    .layout { display: grid; grid-template-columns: 232px minmax(0, 1fr); min-height: calc(100vh - 72px); }
+    .sidebar { background: var(--navy); color: #cbd5e1; padding: 27px 14px; }
+    .side-heading { padding: 0 12px 12px; font-size: 10px; font-weight: 700; letter-spacing: .13em; text-transform: uppercase; color: #8393aa; }
+    .nav-list { display: grid; gap: 5px; }
+    .nav-button {
+      display: flex; align-items: center; gap: 12px; width: 100%; border: 0; background: transparent;
+      color: #cad3df; text-align: left; padding: 11px 12px; border-radius: 9px; font-weight: 550;
+    }
+    .nav-button:hover { background: #223650; color: white; }
+    .nav-button.active { background: #28405b; color: white; }
+    .nav-icon { width: 18px; text-align: center; opacity: .9; }
+    .sidebar-note { margin: 32px 8px 0; border-top: 1px solid #2a3c54; padding: 18px 5px 0; color: #9aabc0; font-size: 11px; line-height: 1.6; }
+    main { min-width: 0; padding: 32px clamp(20px, 4vw, 56px) 56px; }
+    .page-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; margin-bottom: 24px; }
+    .eyebrow { color: var(--teal); font-size: 11px; font-weight: 750; text-transform: uppercase; letter-spacing: .1em; margin: 0 0 7px; }
+    h1 { margin: 0; color: var(--navy); font-size: clamp(25px, 3vw, 31px); letter-spacing: -.045em; }
+    .subhead { margin: 8px 0 0; color: var(--muted); line-height: 1.55; max-width: 720px; }
+    .date-chip { border: 1px solid var(--line); background: white; color: var(--muted); border-radius: 9px; padding: 9px 12px; white-space: nowrap; font-size: 12px; }
+    .banner { display: flex; gap: 11px; padding: 13px 15px; border: 1px solid #d6e9e7; border-radius: 11px; background: #f0faf8; color: #315b59; line-height: 1.5; margin-bottom: 22px; }
+    .banner strong { color: #174d49; }
+    .banner.warning { background: #fff8eb; border-color: #f1dfbf; color: #785322; }
+    .banner.error { background: var(--red-soft); border-color: #f3d0cb; color: #8d3029; }
+    .banner-icon { font-size: 17px; line-height: 1.2; }
+    .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 15px; margin-bottom: 22px; }
+    .stat-card, .card { background: var(--paper); border: 1px solid var(--line); border-radius: 13px; }
+    .stat-card { padding: 17px 18px; }
+    .stat-top { display: flex; justify-content: space-between; align-items: center; color: var(--muted); font-size: 12px; font-weight: 600; }
+    .stat-symbol { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 9px; background: var(--teal-soft); color: var(--teal); font-size: 16px; }
+    .stat-number { font-size: 29px; line-height: 1.1; margin: 13px 0 5px; color: var(--navy); font-weight: 760; letter-spacing: -.05em; }
+    .stat-foot { color: var(--muted); font-size: 11px; }
+    .content-grid { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(265px, .85fr); gap: 18px; align-items: start; }
+    .stack { display: grid; gap: 18px; }
+    .card { padding: 19px; min-width: 0; }
+    .card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 16px; }
+    .card-title { margin: 0; color: var(--navy); font-size: 15px; letter-spacing: -.015em; }
+    .card-description { margin: 5px 0 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
+    .link-button { padding: 3px 0; border: 0; color: var(--teal); background: none; font-weight: 700; font-size: 12px; white-space: nowrap; }
+    .link-button:hover { text-decoration: underline; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; text-align: left; white-space: nowrap; }
+    th { color: #7a8799; font-size: 10px; font-weight: 750; text-transform: uppercase; letter-spacing: .07em; padding: 0 10px 11px; border-bottom: 1px solid var(--line); }
+    td { padding: 12px 10px; border-bottom: 1px solid #edf0f4; color: #425168; font-size: 12px; }
+    tbody tr:last-child td { border-bottom: 0; }
+    .person { color: var(--navy); font-weight: 700; }
+    .patient-id { color: #8591a0; font-size: 10px; margin-top: 3px; }
+    .badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 8px; border-radius: 999px; font-size: 10px; font-weight: 700; }
+    .badge::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+    .badge.ok { color: var(--green); background: var(--green-soft); }
+    .badge.pending { color: var(--amber); background: var(--amber-soft); }
+    .badge.alert { color: var(--red); background: var(--red-soft); }
+    .badge.neutral { color: #57677d; background: #eef2f6; }
+    .task-list { display: grid; gap: 2px; }
+    .task-row { display: flex; justify-content: space-between; align-items: center; gap: 14px; padding: 12px 0; border-bottom: 1px solid #edf0f4; }
+    .task-row:last-child { border: 0; padding-bottom: 0; }
+    .task-row:first-child { padding-top: 0; }
+    .task-label { color: #43536a; font-size: 12px; }
+    .task-value { color: var(--navy); font-weight: 750; font-size: 13px; }
+    .progress-track { height: 7px; background: #eef2f5; border-radius: 99px; overflow: hidden; margin-top: 9px; }
+    .progress-fill { height: 100%; background: var(--teal); border-radius: inherit; }
+    .empty-state { color: var(--muted); padding: 25px 12px; text-align: center; font-size: 12px; line-height: 1.5; }
+    .controls { display: flex; flex-wrap: wrap; gap: 9px; align-items: center; margin-bottom: 14px; }
+    .field, .controls input, .controls select { width: 100%; border: 1px solid #dce3eb; border-radius: 8px; padding: 10px 11px; color: var(--ink); background: white; }
+    .controls input { max-width: 280px; }
+    .controls select { width: auto; min-width: 145px; }
+    .btn { border: 1px solid transparent; border-radius: 8px; padding: 9px 13px; color: white; background: var(--teal); font-size: 12px; font-weight: 700; }
+    .btn:hover:not(:disabled) { background: #066b66; }
+    .btn.secondary { color: #35465d; background: white; border-color: #dce3eb; }
+    .btn.secondary:hover:not(:disabled) { background: #f5f7fa; }
+    .btn.danger { background: var(--red); }
+    .btn.danger:hover:not(:disabled) { background: #992c2c; }
+    .btn:disabled { cursor: not-allowed; opacity: .45; }
+    .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 13px; }
+    .form-field { display: grid; gap: 6px; }
+    .form-field.full { grid-column: 1 / -1; }
+    .form-field label { color: #475569; font-size: 11px; font-weight: 700; }
+    .form-field input, .form-field select, .form-field textarea { width: 100%; border: 1px solid #dce3eb; border-radius: 8px; padding: 10px 11px; color: var(--ink); background: white; }
+    .form-field textarea { min-height: 78px; resize: vertical; }
+    .form-help { color: var(--muted); font-size: 10px; line-height: 1.4; }
+    .form-actions { display: flex; gap: 9px; justify-content: flex-end; margin-top: 15px; }
+    .inline-form { margin-bottom: 17px; padding: 16px; background: #f8fafc; border: 1px solid var(--line); border-radius: 10px; }
+    .inline-form h3 { margin: 0 0 13px; color: var(--navy); font-size: 13px; }
+    .section-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 17px; }
+    .round-card { padding: 15px; border: 1px solid var(--line); border-radius: 10px; margin-bottom: 10px; }
+    .round-card:last-child { margin-bottom: 0; }
+    .round-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 11px; }
+    .reading-value { font-weight: 750; color: var(--navy); font-size: 14px; }
+    .reading-value.fever { color: var(--red); }
+    .small-meta { color: var(--muted); font-size: 10px; margin-top: 4px; line-height: 1.4; }
+    .round-card textarea { margin: 0 0 9px; }
+    .rule-list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+    .rule-list li { display: flex; gap: 9px; align-items: flex-start; color: #4b5b70; font-size: 11px; line-height: 1.5; }
+    .rule-check { color: var(--green); font-weight: 800; }
+    .rule-pending { color: var(--amber); font-weight: 800; }
+    .toast {
+      position: fixed; z-index: 5; right: 22px; bottom: 22px; max-width: min(440px, calc(100vw - 44px));
+      padding: 13px 16px; background: var(--navy); color: white; border-radius: 10px;
+      box-shadow: 0 12px 35px #14253d33; line-height: 1.45; font-size: 12px;
+    }
+    .toast.error { background: #8f2f2b; }
+    .audit-item { display: flex; gap: 10px; padding: 9px 0; border-bottom: 1px solid #edf0f4; }
+    .audit-item:last-child { border: 0; }
+    .audit-dot { width: 7px; height: 7px; margin-top: 5px; flex: 0 0 auto; border-radius: 50%; background: #5ab8a9; }
+    .audit-text { color: #46566d; font-size: 11px; line-height: 1.45; }
+    .audit-time { color: #909bad; font-size: 10px; margin-top: 3px; }
+    .hidden { display: none !important; }
+    @media (max-width: 920px) {
+      .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .content-grid { grid-template-columns: 1fr; }
+      .layout { grid-template-columns: 190px minmax(0, 1fr); }
+    }
+    @media (max-width: 650px) {
+      .topbar { height: auto; min-height: 66px; padding: 12px 16px; }
+      .demo-label { display: none; }
+      .layout { display: block; }
+      .sidebar { padding: 9px 10px; overflow-x: auto; }
+      .side-heading, .sidebar-note { display: none; }
+      .nav-list { display: flex; width: max-content; gap: 4px; }
+      .nav-button { width: auto; padding: 9px 11px; font-size: 11px; }
+      .nav-icon { display: none; }
+      main { padding: 24px 16px 40px; }
+      .date-chip { display: none; }
+      .section-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 420px) {
+      .stats { gap: 9px; }
+      .stat-card { padding: 13px; }
+      .stat-number { font-size: 24px; }
+      .form-grid { grid-template-columns: 1fr; }
+      .form-field.full { grid-column: auto; }
+      .role-select { max-width: 130px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">V</div>
+        <div>VirusCare<small>Facility operations</small></div>
+      </div>
+      <div class="top-actions">
+        <span class="demo-label">Illustrative demo data</span>
+        <label class="sr-only" for="roleSelect">Demo role</label>
+        <select class="role-select" id="roleSelect" aria-label="Choose demo role">
+          <option value="nurse">Nurse view</option>
+          <option value="doctor">Doctor view</option>
+          <option value="admin">Administrator view</option>
+        </select>
+      </div>
+    </header>
+    <div class="layout">
+      <aside class="sidebar">
+        <div class="side-heading">Workspace</div>
+        <nav class="nav-list" aria-label="Main navigation">
+          <button class="nav-button active" data-page="overview"><span class="nav-icon">▦</span>Overview</button>
+          <button class="nav-button" data-page="patients"><span class="nav-icon">♙</span>Patients</button>
+          <button class="nav-button" data-page="temperatures"><span class="nav-icon">♨</span>Temperature log</button>
+          <button class="nav-button" data-page="rounds"><span class="nav-icon">✚</span>Doctor rounds</button>
+          <button class="nav-button" data-page="discharges"><span class="nav-icon">⇥</span>Discharges</button>
+          <button class="nav-button" data-page="outcomes"><span class="nav-icon">▤</span>Outcomes</button>
+        </nav>
+        <div class="sidebar-note">A shared daily workflow for a 74-bed facility. Patient information here is illustrative only.</div>
+      </aside>
+      <main id="main" tabindex="-1"></main>
+    </div>
+  </div>
+  <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+  <script>
+    (() => {
+      "use strict";
+
+      const STORAGE_KEY = "viruscare-demo-v1";
+      const CAPACITY = 74;
+      const FEVER_THRESHOLD = 38;
+      const main = document.getElementById("main");
+      const roleSelect = document.getElementById("roleSelect");
+      const toast = document.getElementById("toast");
+      let currentPage = "overview";
+      let toastTimer;
+
+      const dayKey = (date = new Date()) => {
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, "0");
+        const d = String(date.getDate()).padStart(2, "0");
+        return `${y}-${m}-${d}`;
+      };
+
+      const dateOffset = (offset, hour = 9) => {
+        const date = new Date();
+        date.setDate(date.getDate() + offset);
+        date.setHours(hour, 0, 0, 0);
+        return date.toISOString();
+      };
+
+      const dateKeyOffset = (offset) => {
+        const date = new Date();
+        date.setDate(date.getDate() + offset);
+        return dayKey(date);
+      };
+
+      const seedData = () => {
+        const patients = [
+          { id: "VC-1021", name: "Maya Patel", admittedOn: dateKeyOffset(-6), status: "active" },
+          { id: "VC-1022", name: "Liam Chen", admittedOn: dateKeyOffset(-3), status: "active" },
+          { id: "VC-1023", name: "Aisha Rahman", admittedOn: dateKeyOffset(-4), status: "active" },
+          { id: "VC-1024", name: "Noah Williams", admittedOn: dateKeyOffset(-2), status: "active" },
+          { id: "VC-1025", name: "Elena Garcia", admittedOn: dateKeyOffset(-5), status: "active" }
+        ];
+        const readings = [];
+        const add = (patientId, offset, temp, hour = 9, minuteShift = 0) => {
+          const time = new Date(dateOffset(offset, hour));
+          time.setMinutes(time.getMinutes() + minuteShift);
+          readings.push({ id: crypto.randomUUID(), patientId, temperature: temp, recordedAt: time.toISOString(), recorder: "Demo nurse", source: "Oral" });
+        };
+        [-5, -4, -3, -2, -1, 0].forEach((d) => add("VC-1021", d, 36.8 + ((d + 5) % 3) * 0.1));
+        [-2, -1].forEach((d) => add("VC-1022", d, 37.1));
+        [-3, -2, -1, 0].forEach((d) => add("VC-1023", d, d === -1 ? 38.2 : 37.2));
+        [-1, 0].forEach((d) => add("VC-1024", d, 37.1));
+        [-4, -3, -1, 0].forEach((d) => add("VC-1025", d, 37.4));
+        return {
+          patients,
+          readings,
+          reviews: [],
+          outcomes: [],
+          audit: [{
+            id: crypto.randomUUID(),
+            at: new Date().toISOString(),
+            actor: "System",
+            action: "Loaded illustrative demo records"
+          }]
+        };
+      };
+
+      const loadData = () => {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return seedData();
+          const value = JSON.parse(raw);
+          if (!value || !Array.isArray(value.patients) || !Array.isArray(value.readings) ||
+              !Array.isArray(value.reviews) || !Array.isArray(value.outcomes) || !Array.isArray(value.audit)) {
+            throw new Error("Saved demo data has an unexpected format.");
+          }
+          return value;
+        } catch (error) {
+          setTimeout(() => notify(`Could not load saved demo data (${error.message}). Refresh or clear this site's local storage to restart the demo.`, true), 0);
+          return seedData();
+        }
+      };
+
+      let data = loadData();
+
+      const save = () => {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+          return true;
+        } catch (error) {
+          notify(`Could not save this change to browser storage: ${error.message}`, true);
+          return false;
+        }
+      };
+
+      const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      })[char]);
+
+      const actorForRole = () => ({
+        nurse: "Demo nurse",
+        doctor: "Demo doctor",
+        admin: "Demo administrator"
+      })[roleSelect.value];
+
+      const notify = (message, isError = false) => {
+        toast.textContent = message;
+        toast.classList.toggle("error", isError);
+        toast.classList.remove("hidden");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toast.classList.add("hidden"), 4200);
+      };
+
+      const activePatients = () => data.patients.filter((patient) => patient.status === "active");
+      const patientById = (id) => data.patients.find((patient) => patient.id === id);
+      const readingsFor = (patientId) => data.readings
+        .filter((reading) => reading.patientId === patientId)
+        .sort((a, b) => b.recordedAt.localeCompare(a.recordedAt));
+      const todayReading = (patientId) => readingsFor(patientId).find((reading) => dayKey(new Date(reading.recordedAt)) === dayKey());
+      const latestReviewForToday = (patientId) => {
+        const reading = todayReading(patientId);
+        if (!reading) return null;
+        return data.reviews
+          .filter((review) => review.patientId === patientId && review.date === dayKey() && review.readingId === reading.id)
+          .sort((a, b) => b.reviewedAt.localeCompare(a.reviewedAt))[0] || null;
+      };
+      const reviewIsCurrent = (patientId) => Boolean(latestReviewForToday(patientId));
+      const fmtDate = (value) => new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", year: "numeric" }).format(new Date(`${value}T12:00:00`));
+      const fmtTime = (value) => new Intl.DateTimeFormat(undefined, { hour: "numeric", minute: "2-digit" }).format(new Date(value));
+      const fmtDateTime = (value) => new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }).format(new Date(value));
+
+      const recordAudit = (action) => {
+        data.audit.unshift({ id: crypto.randomUUID(), at: new Date().toISOString(), actor: actorForRole(), action });
+        data.audit = data.audit.slice(0, 80);
+      };
+
+      const feverFreeDays = (patientId) => {
+        let days = 0;
+        const cursor = new Date();
+        cursor.setHours(12, 0, 0, 0);
+        cursor.setDate(cursor.getDate() - 1);
+        for (let i = 0; i < 30; i++) {
+          const key = dayKey(cursor);
+          const reading = readingsFor(patientId).find((item) => dayKey(new Date(item.recordedAt)) === key);
+          if (!reading || reading.temperature >= FEVER_THRESHOLD) break;
+          days++;
+          cursor.setDate(cursor.getDate() - 1);
+        }
+        return days;
+      };
+
+      const dischargeChecks = (patientId) => {
+        const reading = todayReading(patientId);
+        const days = feverFreeDays(patientId);
+        const checks = [
+          { label: "Three full consecutive fever-free days with a recorded observation each day", ok: days >= 3 },
+          { label: "Today's temperature recorded", ok: Boolean(reading) },
+          { label: "Doctor review matches today's latest reading", ok: reviewIsCurrent(patientId) }
+        ];
+        return { eligible: checks.every((item) => item.ok), checks, days };
+      };
+
+      const activeOutcomeCount = () => data.outcomes.filter((outcome) => outcome.type === "recovered" || outcome.type === "deceased").length;
+      const finalizedCounts = () => ({
+        recovered: data.outcomes.filter((outcome) => outcome.type === "recovered").length,
+        deceased: data.outcomes.filter((outcome) => outcome.type === "deceased").length
+      });
+      const outcomeRate = () => {
+        const counts = finalizedCounts();
+        const total = counts.recovered + counts.deceased;
+        return { ...counts, total, success: total ? counts.recovered / total * 100 : 0, mortality: total ? counts.deceased / total * 100 : 0 };
+      };
+
+      const pageTitles = {
+        overview: ["Operations overview", "Today's workload and facility status at a glance."],
+        patients: ["Patient registry", "Review active patients and manage admissions."],
+        temperatures: ["Temperature log", "Record one observation per patient per facility-local day."],
+        rounds: ["Doctor rounds", "Review patients after today's temperature has been recorded."],
+        discharges: ["Discharge readiness", "Check every prerequisite before an administrator confirms discharge."],
+        outcomes: ["Outcomes & reports", "Review finalized outcomes and the current cohort rates."]
+      };
+
+      const pageHeader = (page) => {
+        const [title, description] = pageTitles[page];
+        return `<div class="page-head"><div><p class="eyebrow">74-bed quarantine facility</p><h1>${title}</h1><p class="subhead">${description}</p></div><div class="date-chip">${new Intl.DateTimeFormat(undefined, { weekday: "short", month: "short", day: "numeric", year: "numeric" }).format(new Date())}</div></div>`;
+      };
+
+      const banner = (text, type = "") => `<div class="banner ${type}"><span class="banner-icon" aria-hidden="true">${type === "warning" ? "!" : "i"}</span><div>${text}</div></div>`;
+      const badge = (text, kind = "neutral") => `<span class="badge ${kind}">${escapeHtml(text)}</span>`;
+
+      const statCard = (label, number, foot, icon) => `
+        <div class="stat-card"><div class="stat-top">${label}<span class="stat-symbol">${icon}</span></div>
+        <div class="stat-number">${number}</div><div class="stat-foot">${foot}</div></div>`;
+
+      const patientCell = (patient) => `<div class="person">${escapeHtml(patient.name)}</div><div class="patient-id">${escapeHtml(patient.id)}</div>`;
+
+      const workflowStatus = (patient) => {
+        const reading = todayReading(patient.id);
+        const reviewed = reviewIsCurrent(patient.id);
+        if (!reading) return badge("Temperature due", "pending");
+        if (!reviewed) return badge("Review due", "pending");
+        return badge("Reviewed", "ok");
+      };
+
+      const patientRows = (patients) => patients.length ? patients.map((patient) => {
+        const reading = todayReading(patient.id);
+        return `<tr><td>${patientCell(patient)}</td><td>${fmtDate(patient.admittedOn)}</td>
+          <td>${reading ? `${reading.temperature.toFixed(1)} °C` : "—"}</td><td>${workflowStatus(patient)}</td></tr>`;
+      }).join("") : `<tr><td colspan="4"><div class="empty-state">No active patients match your filters.</div></td></tr>`;
+
+      const auditMarkup = (count = 6) => data.audit.slice(0, count).map((event) => `
+        <div class="audit-item"><span class="audit-dot"></span><div><div class="audit-text">${escapeHtml(event.action)} · ${escapeHtml(event.actor)}</div><div class="audit-time">${fmtDateTime(event.at)}</div></div></div>`
+      ).join("") || `<div class="empty-state">Actions in this demo will appear here.</div>`;
+
+      const overviewPage = () => {
+        const active = activePatients();
+        const dueTemps = active.filter((patient) => !todayReading(patient.id)).length;
+        const dueReviews = active.filter((patient) => todayReading(patient.id) && !reviewIsCurrent(patient.id)).length;
+        const candidates = active.filter((patient) => dischargeChecks(patient.id).eligible).length;
+        const rate = outcomeRate();
+        const occupancyPct = Math.min(100, active.length / CAPACITY * 100);
+        const mortalityWarning = rate.total > 0 && rate.mortality > 15;
+        return `${pageHeader("overview")}
+          ${banner("<strong>Demo only:</strong> This prototype uses illustrative records and browser-local storage. It is not a clinical system and does not diagnose, recommend treatment, or autonomously discharge patients.")}
+          ${mortalityWarning ? banner(`<strong>Outcome threshold exceeded:</strong> Mortality is ${rate.mortality.toFixed(1)}% across ${rate.total} finalized outcomes. Review the cohort and sample size before drawing conclusions.`, "warning") : ""}
+          <section class="stats" aria-label="Facility key performance indicators">
+            ${statCard("Active patients", active.length, `of ${CAPACITY} available beds`, "♙")}
+            ${statCard("Temperatures due", dueTemps, "active patients without today's reading", "♨")}
+            ${statCard("Doctor reviews due", dueReviews, "reading entered, review still pending", "✚")}
+            ${statCard("Discharge candidates", candidates, "all prototype prerequisites met", "⇥")}
+          </section>
+          <div class="content-grid">
+            <section class="card"><div class="card-head"><div><h2 class="card-title">Active patient workflow</h2><p class="card-description">Daily temperature and doctor review status</p></div><button class="link-button" data-go="patients">View registry →</button></div>
+              <div class="table-wrap"><table><thead><tr><th>Patient</th><th>Admitted</th><th>Today's temp</th><th>Workflow</th></tr></thead><tbody>${patientRows(active.slice(0, 8))}</tbody></table></div>
+            </section>
+            <div class="stack">
+              <section class="card"><div class="card-head"><div><h2 class="card-title">Bed occupancy</h2><p class="card-description">${active.length} of ${CAPACITY} beds in use</p></div>${badge(`${Math.round(occupancyPct)}%`, "neutral")}</div>
+                <div class="progress-track" aria-label="${Math.round(occupancyPct)}% occupancy"><div class="progress-fill" style="width:${occupancyPct}%"></div></div>
+                <div class="task-list" style="margin-top:15px"><div class="task-row"><span class="task-label">Available beds</span><span class="task-value">${CAPACITY - active.length}</span></div><div class="task-row"><span class="task-label">Finalized outcomes</span><span class="task-value">${rate.total}</span></div></div>
+              </section>
+              <section class="card"><div class="card-head"><div><h2 class="card-title">Recent activity</h2><p class="card-description">Demo audit trail for this browser</p></div></div>${auditMarkup(5)}</section>
+            </div>
+          </div>`;
+      };
+
+      const patientPage = () => {
+        const admin = roleSelect.value === "admin";
+        const active = activePatients();
+        const history = data.patients.filter((patient) => patient.status !== "active");
+        return `${pageHeader("patients")}
+          ${active.length >= CAPACITY ? banner(`<strong>Facility at capacity:</strong> All ${CAPACITY} beds are occupied. Review bed management before attempting another admission.`, "warning") : ""}
+          ${admin ? `<section class="inline-form"><h3>Register / admit a patient</h3><form id="admitForm" class="form-grid">
+            <div class="form-field"><label for="patientName">Patient name</label><input id="patientName" name="name" required maxlength="100" autocomplete="off"></div>
+            <div class="form-field"><label for="patientId">Unique patient ID</label><input id="patientId" name="id" required maxlength="32" autocomplete="off" placeholder="e.g. VC-1026"></div>
+            <div class="form-field"><label for="admittedOn">Admission date</label><input id="admittedOn" name="admittedOn" type="date" required value="${dayKey()}"></div>
+            <div class="form-field"><label>Bed availability</label><input value="${CAPACITY - active.length} beds available" disabled></div>
+            <div class="form-actions form-field full"><button class="btn" type="submit" ${active.length >= CAPACITY ? "disabled" : ""}>Admit patient</button></div>
+          </form></section>` : ""}
+          <section class="card"><div class="card-head"><div><h2 class="card-title">Active patients <span style="color:#8996a7;font-weight:500">(${active.length})</span></h2><p class="card-description">Current census and today's workflow status</p></div></div>
+            <div class="controls"><input type="search" id="patientSearch" placeholder="Search name or patient ID" aria-label="Search active patients"><select id="patientStatusFilter" aria-label="Filter by daily workflow"><option value="all">All workflow states</option><option value="temperature">Temperature due</option><option value="review">Review due</option><option value="reviewed">Reviewed</option></select></div>
+            <div class="table-wrap"><table><thead><tr><th>Patient</th><th>Admitted</th><th>Today's temp</th><th>Workflow</th></tr></thead><tbody id="patientTable">${patientRows(active)}</tbody></table></div>
+          </section>
+          ${history.length ? `<section class="card" style="margin-top:18px"><div class="card-head"><div><h2 class="card-title">Finalized patients</h2><p class="card-description">No longer included in active bed occupancy</p></div></div><div class="table-wrap"><table><thead><tr><th>Patient</th><th>Admitted</th><th>Final status</th><th>Outcome date</th></tr></thead><tbody>${history.map((patient) => {
+            const outcome = data.outcomes.find((item) => item.patientId === patient.id);
+            return `<tr><td>${patientCell(patient)}</td><td>${fmtDate(patient.admittedOn)}</td><td>${badge(patient.status === "discharged" ? "Discharged" : "Deceased", patient.status === "discharged" ? "ok" : "neutral")}</td><td>${outcome ? fmtDateTime(outcome.finalizedAt) : "—"}</td></tr>`;
+          }).join("")}</tbody></table></div></section>` : ""}`;
+      };
+
+      const temperaturePage = () => {
+        const canRecord = roleSelect.value === "nurse";
+        const active = activePatients();
+        const todayRecords = active.map((patient) => ({ patient, reading: todayReading(patient.id) })).filter((item) => item.reading);
+        const recentHistory = active.flatMap((patient) => readingsFor(patient.id).map((reading) => ({ patient, reading })))
+          .sort((a, b) => b.reading.recordedAt.localeCompare(a.reading.recordedAt))
+          .slice(0, 24);
+        const queue = active.filter((patient) => !todayReading(patient.id));
+        return `${pageHeader("temperatures")}
+          ${banner("Record the observation with the recorder and source. A second reading on the same facility-local day is blocked; this prototype has no correction workflow.")}
+          ${canRecord ? `<section class="inline-form"><h3>Record a temperature</h3><form id="temperatureForm" class="form-grid">
+            <div class="form-field"><label for="temperaturePatient">Active patient</label><select id="temperaturePatient" name="patientId" required ${queue.length ? "" : "disabled"}><option value="">Choose a patient without today's reading</option>${queue.map((patient) => `<option value="${escapeHtml(patient.id)}">${escapeHtml(patient.name)} · ${escapeHtml(patient.id)}</option>`).join("")}</select></div>
+            <div class="form-field"><label for="temperatureValue">Temperature (°C)</label><input id="temperatureValue" name="temperature" type="number" min="30" max="45" step="0.1" required placeholder="e.g. 37.2"><span class="form-help">Prototype validation range: 30–45 °C. Fever threshold assumption: ≥ 38.0 °C.</span></div>
+            <div class="form-field"><label for="temperatureSource">Measurement source</label><select id="temperatureSource" name="source" required><option value="">Choose source</option><option>Oral</option><option>Axillary</option><option>Tympanic</option><option>Temporal</option><option>Other</option></select></div>
+            <div class="form-field"><label>Recorder</label><input value="${escapeHtml(actorForRole())}" disabled></div>
+            <div class="form-field full"><span class="form-help">Recorded with the current facility-local date and time: ${fmtDateTime(new Date().toISOString())}.</span></div>
+            <div class="form-actions form-field full"><button class="btn" type="submit" ${queue.length ? "" : "disabled"}>Save temperature</button></div>
+          </form></section>` : banner("Temperature entry is available in the Nurse view. Select another demo role to see that workflow.", "warning")}
+          ${queue.length ? `<section class="card" style="margin-bottom:18px"><div class="card-head"><div><h2 class="card-title">Due today <span style="color:#8996a7;font-weight:500">(${queue.length})</span></h2><p class="card-description">Active patients with no temperature entered today</p></div></div><div class="table-wrap"><table><thead><tr><th>Patient</th><th>Admitted</th><th>Workflow</th></tr></thead><tbody>${queue.map((patient) => `<tr><td>${patientCell(patient)}</td><td>${fmtDate(patient.admittedOn)}</td><td>${badge("Temperature due", "pending")}</td></tr>`).join("")}</tbody></table></div></section>` : ""}
+          <section class="card"><div class="card-head"><div><h2 class="card-title">Today's readings</h2><p class="card-description">Read-only history; corrections require an authorized audited process.</p></div></div>
+            ${todayRecords.length ? `<div class="table-wrap"><table><thead><tr><th>Patient</th><th>Temperature</th><th>Recorded at</th><th>Recorder</th><th>Source</th><th>Doctor review</th></tr></thead><tbody>${todayRecords.map(({ patient, reading }) => `<tr><td>${patientCell(patient)}</td><td>${badge(`${reading.temperature.toFixed(1)} °C`, reading.temperature >= FEVER_THRESHOLD ? "alert" : "ok")}</td><td>${fmtTime(reading.recordedAt)}</td><td>${escapeHtml(reading.recorder)}</td><td>${escapeHtml(reading.source)}</td><td>${reviewIsCurrent(patient.id) ? badge("Reviewed", "ok") : badge("Pending", "pending")}</td></tr>`).join("")}</tbody></table></div>` : `<div class="empty-state">No active patients have a temperature recorded today.</div>`}
+          </section>
+          <section class="card" style="margin-top:18px"><div class="card-head"><div><h2 class="card-title">Recent temperature history</h2><p class="card-description">Latest readings across active patients for review and trend context. This is not a clinical interpretation.</p></div></div>
+            ${recentHistory.length ? `<div class="table-wrap"><table><thead><tr><th>Patient</th><th>Date & time</th><th>Temperature</th><th>Recorder</th><th>Source</th></tr></thead><tbody>${recentHistory.map(({ patient, reading }) => `<tr><td>${patientCell(patient)}</td><td>${fmtDateTime(reading.recordedAt)}</td><td>${badge(`${reading.temperature.toFixed(1)} °C`, reading.temperature >= FEVER_THRESHOLD ? "alert" : "ok")}</td><td>${escapeHtml(reading.recorder)}</td><td>${escapeHtml(reading.source)}</td></tr>`).join("")}</tbody></table></div>` : `<div class="empty-state">No temperature history is available.</div>`}
+          </section>`;
+      };
+
+      const roundsPage = () => {
+        const doctor = roleSelect.value === "doctor";
+        const active = activePatients();
+        const needsReview = active.filter((patient) => todayReading(patient.id) && !reviewIsCurrent(patient.id));
+        const reviewed = active.filter((patient) => reviewIsCurrent(patient.id));
+        const waitingForTemperature = active.filter((patient) => !todayReading(patient.id));
+        const renderRound = (patient, done = false) => {
+          const reading = todayReading(patient.id);
+          const review = latestReviewForToday(patient.id);
+          return `<article class="round-card"><div class="round-top"><div>${patientCell(patient)}<div class="small-meta">Today's temperature · ${fmtTime(reading.recordedAt)} · ${escapeHtml(reading.source)}</div></div>${badge(`${reading.temperature.toFixed(1)} °C`, reading.temperature >= FEVER_THRESHOLD ? "alert" : "ok")}</div>
+            ${reading.temperature >= FEVER_THRESHOLD ? `<div class="small-meta" style="color:var(--red);margin:0 0 10px">Above the prototype fever threshold (≥ ${FEVER_THRESHOLD.toFixed(1)} °C). Follow facility-approved escalation protocols.</div>` : ""}
+            ${done ? `<div class="small-meta"><strong>Reviewed by ${escapeHtml(review.doctor)}</strong> · ${fmtTime(review.reviewedAt)}<br>${escapeHtml(review.note || "No note recorded.")}</div>` : doctor ? `<form class="reviewForm" data-patient-id="${escapeHtml(patient.id)}"><label class="form-field"><span class="form-help" style="font-weight:700;color:#475569;margin-bottom:5px">Assessment / plan note</span><textarea name="note" maxlength="1000" placeholder="Record the review note. Do not use this demo for clinical decisions."></textarea></label><div style="display:flex;justify-content:flex-end"><button class="btn" type="submit">Mark daily review complete</button></div></form>` : `<div class="small-meta">Doctor review is pending. Only a doctor can complete it.</div>`}
+          </article>`;
+        };
+        const roundContent = doctor
+          ? `<div class="section-grid"><section class="card"><div class="card-head"><div><h2 class="card-title">Review queue <span style="color:#8996a7;font-weight:500">(${needsReview.length})</span></h2><p class="card-description">Patients with a current reading awaiting review</p></div></div>${needsReview.length ? needsReview.map((patient) => renderRound(patient)).join("") : `<div class="empty-state">No reviews are due.</div>`}</section>
+            <section class="card"><div class="card-head"><div><h2 class="card-title">Reviewed today <span style="color:#8996a7;font-weight:500">(${reviewed.length})</span></h2><p class="card-description">Reviews tied to each patient's latest reading</p></div></div>${reviewed.length ? reviewed.map((patient) => renderRound(patient, true)).join("") : `<div class="empty-state">No current doctor reviews yet.</div>`}</section>
+            <section class="card" style="grid-column:1/-1"><div class="card-head"><div><h2 class="card-title">Waiting for temperature <span style="color:#8996a7;font-weight:500">(${waitingForTemperature.length})</span></h2><p class="card-description">Review cannot be completed until today's observation is entered.</p></div></div>${waitingForTemperature.length ? waitingForTemperature.map((patient) => `<article class="round-card"><div class="round-top"><div>${patientCell(patient)}<div class="small-meta">Today's temperature has not been recorded.</div></div><button class="btn" type="button" disabled aria-disabled="true">Waiting for temperature</button></div></article>`).join("") : `<div class="empty-state">All active patients have a temperature recorded today.</div>`}</section></div>`
+          : `<section class="card"><div class="card-head"><div><h2 class="card-title">Review queue</h2><p class="card-description">Doctor review status for active patients</p></div></div>${active.filter((patient) => todayReading(patient.id)).length ? active.filter((patient) => todayReading(patient.id)).map((patient) => renderRound(patient, reviewIsCurrent(patient.id))).join("") : `<div class="empty-state">No patient can be reviewed until today's temperature is recorded.</div>`}</section>${banner("The review action is available in the Doctor view. Nurses and administrators cannot mark doctor reviews complete.", "warning")}`;
+        return `${pageHeader("rounds")}
+          ${banner("Doctor review is blocked until today's temperature exists. A new reading entered after a review makes that review stale and requires a new review.")}
+          ${roundContent}`;
+      };
+
+      const dischargePage = () => {
+        const admin = roleSelect.value === "admin";
+        const active = activePatients();
+        return `${pageHeader("discharges")}
+          ${banner("Eligibility is not authorization. This prototype requires three full consecutive fever-free days with an observation each day, today's temperature, a current doctor review, and an explicit administrator confirmation.")}
+          <section class="card"><div class="card-head"><div><h2 class="card-title">Patient readiness</h2><p class="card-description">Fever-free days count only complete prior facility-local dates with recorded temperatures below ${FEVER_THRESHOLD.toFixed(1)} °C. Missing dates do not count.</p></div></div>
+          ${active.length ? active.map((patient) => {
+            const result = dischargeChecks(patient.id);
+            return `<article class="round-card"><div class="round-top"><div>${patientCell(patient)}<div class="small-meta">${result.days} consecutive fever-free full day${result.days === 1 ? "" : "s"} recorded</div></div>${badge(result.eligible ? "Eligible for admin confirmation" : "Not yet eligible", result.eligible ? "ok" : "pending")}</div>
+              <ul class="rule-list">${result.checks.map((check) => `<li><span class="${check.ok ? "rule-check" : "rule-pending"}">${check.ok ? "✓" : "○"}</span>${escapeHtml(check.label)}</li>`).join("")}</ul>
+              ${admin ? `<div style="display:flex;justify-content:flex-end;margin-top:13px"><button class="btn" data-discharge="${escapeHtml(patient.id)}" ${result.eligible ? "" : "disabled"}>Confirm recovery & discharge</button></div>` : ""}
+            </article>`;
+          }).join("") : `<div class="empty-state">No active patients are awaiting discharge.</div>`}
+          </section>${!admin ? banner("Only an administrator can confirm discharge. The action is unavailable in this role.", "warning") : ""}`;
+      };
+
+      const outcomesPage = () => {
+        const admin = roleSelect.value === "admin";
+        const rate = outcomeRate();
+        const warning = rate.total > 0 && rate.mortality > 15;
+        const active = activePatients();
+        const outcomes = [...data.outcomes].sort((a, b) => b.finalizedAt.localeCompare(a.finalizedAt));
+        return `${pageHeader("outcomes")}
+          ${warning ? banner(`<strong>Mortality exceeds the 15% threshold:</strong> ${rate.deceased} deaths among ${rate.total} finalized outcomes (${rate.mortality.toFixed(1)}%). Validate the cohort and interpret small samples cautiously.`, "warning") : ""}
+          ${banner("Rates use finalized outcomes only: recovery rate = recovered ÷ finalized outcomes; mortality = deceased ÷ finalized outcomes. Active patients are excluded.")}
+          <section class="stats">
+            ${statCard("Finalized outcomes", rate.total, "active patients excluded", "▤")}
+            ${statCard("Recovered", rate.recovered, "confirmed recovery & discharge", "✓")}
+            ${statCard("Recovery rate", `${rate.success.toFixed(1)}%`, `of ${rate.total} finalized outcomes`, "↗")}
+            ${statCard("Mortality rate", `${rate.mortality.toFixed(1)}%`, `of ${rate.total} finalized outcomes`, "•")}
+          </section>
+          ${admin ? `<section class="inline-form"><h3>Record a deceased outcome</h3><form id="deathForm" class="form-grid">
+            <div class="form-field"><label for="deathPatient">Active patient</label><select id="deathPatient" name="patientId" required ${active.length ? "" : "disabled"}><option value="">Choose a patient</option>${active.map((patient) => `<option value="${escapeHtml(patient.id)}">${escapeHtml(patient.name)} · ${escapeHtml(patient.id)}</option>`).join("")}</select></div>
+            <div class="form-field"><label>Outcome</label><input value="Deceased" disabled></div>
+            <div class="form-field full"><span class="form-help">Records an administrator-confirmed finalized outcome and updates occupancy. Do not enter real patient data in this demo.</span></div>
+            <div class="form-actions form-field full"><button class="btn danger" type="submit" ${active.length ? "" : "disabled"}>Finalize deceased outcome</button></div>
+          </form></section>` : ""}
+          <section class="card"><div class="card-head"><div><h2 class="card-title">Finalized outcome register</h2><p class="card-description">Sample size: ${rate.total} · Cohort date range: ${outcomes.length ? `${fmtDate(outcomes[outcomes.length - 1].finalizedAt.slice(0, 10))} – ${fmtDate(outcomes[0].finalizedAt.slice(0, 10))}` : "No finalized outcomes"}</p></div></div>
+          ${outcomes.length ? `<div class="table-wrap"><table><thead><tr><th>Patient</th><th>Outcome</th><th>Finalized at</th><th>Recorded by</th></tr></thead><tbody>${outcomes.map((outcome) => {
+            const patient = patientById(outcome.patientId);
+            return `<tr><td>${patient ? patientCell(patient) : escapeHtml(outcome.patientId)}</td><td>${badge(outcome.type === "recovered" ? "Recovered" : "Deceased", outcome.type === "recovered" ? "ok" : "alert")}</td><td>${fmtDateTime(outcome.finalizedAt)}</td><td>${escapeHtml(outcome.actor)}</td></tr>`;
+          }).join("")}</tbody></table></div>` : `<div class="empty-state">No outcomes have been finalized yet. Confirm an eligible recovery discharge or record a deceased outcome.</div>`}
+          </section>`;
+      };
+
+      const render = () => {
+        const pages = { overview: overviewPage, patients: patientPage, temperatures: temperaturePage, rounds: roundsPage, discharges: dischargePage, outcomes: outcomesPage };
+        main.innerHTML = pages[currentPage]();
+        document.querySelectorAll(".nav-button").forEach((button) => {
+          button.classList.toggle("active", button.dataset.page === currentPage);
+          button.setAttribute("aria-current", button.dataset.page === currentPage ? "page" : "false");
+        });
+      };
+
+      const submitAdmission = (form) => {
+        if (roleSelect.value !== "admin") return notify("Only administrators can admit patients.", true);
+        const values = new FormData(form);
+        const name = String(values.get("name") || "").trim();
+        const id = String(values.get("id") || "").trim().toUpperCase();
+        const admittedOn = String(values.get("admittedOn") || "");
+        if (!name || !id || !admittedOn) return notify("Enter the patient's name, unique ID, and admission date.", true);
+        if (data.patients.some((patient) => patient.id.toLowerCase() === id.toLowerCase())) return notify("That patient ID is already in use. Enter a unique ID.", true);
+        if (activePatients().length >= CAPACITY) return notify(`Admission blocked: all ${CAPACITY} active beds are occupied.`, true);
+        if (admittedOn > dayKey()) return notify("Admission date cannot be in the future.", true);
+        data.patients.push({ id, name, admittedOn, status: "active" });
+        recordAudit(`Admitted patient ${name} (${id})`);
+        if (save()) {
+          notify(`${name} admitted successfully.`);
+          render();
+        }
+      };
+
+      const submitTemperature = (form) => {
+        if (roleSelect.value !== "nurse") return notify("Only nurses can record temperatures.", true);
+        const values = new FormData(form);
+        const patientId = String(values.get("patientId") || "");
+        const temp = Number(values.get("temperature"));
+        const source = String(values.get("source") || "");
+        const patient = patientById(patientId);
+        if (!patient || patient.status !== "active") return notify("Choose an active patient.", true);
+        if (!Number.isFinite(temp) || temp < 30 || temp > 45) return notify("Temperature must be a number between 30 and 45 °C.", true);
+        if (!source) return notify("Choose a measurement source.", true);
+        if (todayReading(patientId)) return notify("A temperature is already recorded for this patient today. Corrections require an authorized audited workflow.", true);
+        const reading = { id: crypto.randomUUID(), patientId, temperature: temp, recordedAt: new Date().toISOString(), recorder: actorForRole(), source };
+        data.readings.push(reading);
+        recordAudit(`Recorded ${temp.toFixed(1)} °C for ${patient.name} (${patient.id})`);
+        if (save()) {
+          notify(`Temperature recorded for ${patient.name}. Doctor review is now due.`);
+          render();
+        }
+      };
+
+      const submitReview = (form) => {
+        if (roleSelect.value !== "doctor") return notify("Only doctors can complete a daily review.", true);
+        const patientId = form.dataset.patientId;
+        const patient = patientById(patientId);
+        const reading = todayReading(patientId);
+        if (!patient || patient.status !== "active" || !reading) return notify("Today's temperature is required before review.", true);
+        const note = String(new FormData(form).get("note") || "").trim();
+        if (note.length > 1000) return notify("Review note must be 1,000 characters or fewer.", true);
+        if (todayReading(patientId)?.id !== reading.id) return notify("The temperature changed. Refresh and review the latest reading.", true);
+        data.reviews.push({ id: crypto.randomUUID(), patientId, date: dayKey(), readingId: reading.id, doctor: actorForRole(), note, reviewedAt: new Date().toISOString() });
+        recordAudit(`Completed daily doctor review for ${patient.name} (${patient.id})`);
+        if (save()) {
+          notify(`Daily review recorded for ${patient.name}.`);
+          render();
+        }
+      };
+
+      const confirmDischarge = (patientId) => {
+        if (roleSelect.value !== "admin") return notify("Only administrators can confirm discharge.", true);
+        const patient = patientById(patientId);
+        const result = dischargeChecks(patientId);
+        if (!patient || patient.status !== "active") return notify("This patient is not active.", true);
+        if (!result.eligible) return notify("Discharge blocked: one or more clinical workflow prerequisites are missing or stale.", true);
+        if (!window.confirm(`Confirm administrator-authorized recovery and discharge for ${patient.name} (${patient.id})?`)) return;
+        patient.status = "discharged";
+        const outcome = { id: crypto.randomUUID(), patientId, type: "recovered", finalizedAt: new Date().toISOString(), actor: actorForRole() };
+        data.outcomes.push(outcome);
+        recordAudit(`Confirmed recovery and discharge for ${patient.name} (${patient.id})`);
+        if (save()) {
+          notify(`${patient.name} discharged. Bed occupancy has been updated.`);
+          render();
+        }
+      };
+
+      const submitDeathOutcome = (form) => {
+        if (roleSelect.value !== "admin") return notify("Only administrators can record finalized outcomes.", true);
+        const patientId = String(new FormData(form).get("patientId") || "");
+        const patient = patientById(patientId);
+        if (!patient || patient.status !== "active") return notify("Choose an active patient.", true);
+        if (!window.confirm(`Confirm recording a deceased outcome for ${patient.name} (${patient.id})? This updates occupancy.`)) return;
+        patient.status = "deceased";
+        data.outcomes.push({ id: crypto.randomUUID(), patientId, type: "deceased", finalizedAt: new Date().toISOString(), actor: actorForRole() });
+        recordAudit(`Recorded deceased outcome for ${patient.name} (${patient.id})`);
+        if (save()) {
+          notify(`Outcome finalized for ${patient.name}. Bed occupancy has been updated.`);
+          render();
+        }
+      };
+
+      const filterPatients = () => {
+        const query = (document.getElementById("patientSearch")?.value || "").trim().toLowerCase();
+        const filter = document.getElementById("patientStatusFilter")?.value || "all";
+        const filtered = activePatients().filter((patient) => {
+          const matchesQuery = `${patient.name} ${patient.id}`.toLowerCase().includes(query);
+          const reading = todayReading(patient.id);
+          const matchesFilter = filter === "all" ||
+            (filter === "temperature" && !reading) ||
+            (filter === "review" && Boolean(reading) && !reviewIsCurrent(patient.id)) ||
+            (filter === "reviewed" && reviewIsCurrent(patient.id));
+          return matchesQuery && matchesFilter;
+        });
+        document.getElementById("patientTable").innerHTML = patientRows(filtered);
+      };
+
+      document.querySelector(".nav-list").addEventListener("click", (event) => {
+        const button = event.target.closest("[data-page]");
+        if (!button) return;
+        currentPage = button.dataset.page;
+        render();
+        main.focus({ preventScroll: true });
+      });
+
+      roleSelect.addEventListener("change", () => render());
+
+      main.addEventListener("click", (event) => {
+        const go = event.target.closest("[data-go]");
+        if (go) {
+          currentPage = go.dataset.go;
+          render();
+          return;
+        }
+        const discharge = event.target.closest("[data-discharge]");
+        if (discharge) confirmDischarge(discharge.dataset.discharge);
+      });
+
+      main.addEventListener("input", (event) => {
+        if (event.target.id === "patientSearch") filterPatients();
+      });
+      main.addEventListener("change", (event) => {
+        if (event.target.id === "patientStatusFilter") filterPatients();
+      });
+
+      main.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const form = event.target;
+        const formId = form.getAttribute("id");
+        if (formId === "admitForm") submitAdmission(form);
+        if (formId === "temperatureForm") submitTemperature(form);
+        if (form.classList.contains("reviewForm")) submitReview(form);
+        if (formId === "deathForm") submitDeathOutcome(form);
+      });
+
+      render();
+    })();
+  </script>
+</body>
+</html>
